@@ -1,0 +1,7 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+warn "igniter-stack has been archived."
+warn "The active repository surface is limited to igniter-contracts, igniter-extensions, igniter-application, and igniter-mcp-adapter."
+warn "Recreate the needed host or server workflow on top of igniter-application instead of using the old stack CLI."
+exit 1

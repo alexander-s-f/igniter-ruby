@@ -1,0 +1,15 @@
+# frozen_string_literal: true
+
+require "rb_sys/extensiontask"
+require "rspec/core/rake_task"
+
+GEMSPEC = Gem::Specification.load(File.expand_path("igniter-ledger.gemspec", __dir__))
+
+RbSys::ExtensionTask.new("igniter_store_native", GEMSPEC) do |ext|
+  ext.lib_dir = "lib/igniter/store"
+end
+
+RSpec::Core::RakeTask.new(:spec)
+
+task default: [:compile, :spec]
+task spec: :compile

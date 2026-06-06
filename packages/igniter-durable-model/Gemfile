@@ -1,0 +1,11 @@
+source "https://rubygems.org"
+
+gemspec
+
+# igniter-ledger is the backing storage primitive.
+# Run `cd ../igniter-ledger && PATH="$HOME/.cargo/bin:$PATH" bundle exec rake compile` first.
+gem "igniter-ledger", path: "../igniter-ledger"
+gem "igniter-ledger-client", path: "../igniter-ledger-client"
+
+gem "rspec", "~> 3.0"
+gem "rake", "~> 13.0"

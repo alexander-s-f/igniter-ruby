@@ -89,7 +89,7 @@ The protocol-first client boundary for Ledger users. It owns request/response
 envelopes, transports, errors, and future pooling/retry/backpressure policy
 without embedding the storage engine.
 
-### `igniter-companion`
+### `igniter-durable-model`
 
 Typed application-facing `Record` / `History` facade over `igniter-ledger`.
 It turns raw facts into ergonomic app objects while applying pressure back onto
@@ -180,13 +180,15 @@ and approval gates.
 
 ## Repository Map
 
-- [docs/](./docs/README.md) — documentation portal
-- [docs/guide/](./docs/guide/README.md) — user-facing guide
-- [docs/concepts/](./docs/concepts/README.md) — mental models and vocabulary
-- [docs/dev/](./docs/dev/README.md) — architecture and package boundaries
-- [examples/](./examples/README.md) — runnable examples
+- [docs/](./docs/README.md) — split-era documentation index
 - [packages/](./packages/README.md) — package list and local package docs
-- [playgrounds/](./playgrounds/README.md) — private/local-first experiments and history
+- [spec/current/](./spec/current/) — current umbrella specs
+- [spec/igniter/](./spec/igniter/) — focused current framework specs
+- [spec/archive/legacy/](./spec/archive/legacy/) — retained legacy specs, not the default current suite
+
+Guide/dev docs, runnable examples, and old playground history are intentionally
+not bulk-carried in this first split-era baseline. They should return through
+curated transfer slices only when still useful.
 
 ## Package Docs
 
@@ -195,7 +197,7 @@ and approval gates.
 - [igniter-embed](./packages/igniter-embed/README.md)
 - [igniter-ledger](./packages/igniter-ledger/README.md)
 - [igniter-ledger-client](./packages/igniter-ledger-client/README.md)
-- [igniter-companion](./packages/igniter-companion/README.md)
+- [igniter-durable-model](./packages/igniter-durable-model/README.md)
 - [igniter-application](./packages/igniter-application/README.md)
 - [igniter-web](./packages/igniter-web/README.md)
 - [igniter-agents](./packages/igniter-agents/README.md)
@@ -218,5 +220,6 @@ real app pressure
 ```
 
 That loop is why some docs live beside packages, some live in public guide/dev
-sections, and older long-form research is compressed into `playgrounds/docs/`
-instead of being used as public onboarding.
+sections, and older long-form research is compressed into package-local docs,
+archive surfaces, or future curated transfer slices instead of being used as
+public onboarding.

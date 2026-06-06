@@ -1,0 +1,18 @@
+# frozen_string_literal: true
+
+require_relative "assembly/registry"
+require_relative "assembly/ordered_registry"
+require_relative "assembly/pack"
+require_relative "assembly/pack_manifest"
+require_relative "assembly/node_type"
+require_relative "assembly/dsl_keyword"
+require_relative "assembly/path_access"
+require_relative "assembly/hook_result_policies"
+require_relative "assembly/hook_spec"
+require_relative "assembly/hook_specs"
+require_relative "assembly/profile"
+require_relative "assembly/kernel"
+require_relative "assembly/baseline_pack"
+require_relative "assembly/const_pack"
+require_relative "assembly/project_pack"
+require_relative "assembly/step_result_pack"

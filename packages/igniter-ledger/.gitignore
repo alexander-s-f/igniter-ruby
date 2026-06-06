@@ -1,0 +1,10 @@
+# Compiled native extension
+*.bundle
+*.so
+*.dylib
+
+# Rust build artifacts
+target/
+
+# rake-compiler build directory
+tmp/

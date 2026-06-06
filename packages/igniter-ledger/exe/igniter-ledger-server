@@ -1,0 +1,111 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+#
+# igniter-ledger-server — standalone LedgerServer process
+#
+# Usage:
+#   igniter-ledger-server [options]
+#
+# Examples:
+#   igniter-ledger-server
+#   igniter-ledger-server --port 7400 --backend memory
+#   igniter-ledger-server --backend file --path /var/lib/igniter/store.wal --pid-file /run/igniter-ledger.pid
+#   igniter-ledger-server --host 0.0.0.0 --port 7400 --log-level debug
+
+require "optparse"
+require_relative "../lib/igniter-ledger"
+
+opts        = {}
+cf_opts     = {}
+cf_thresholds = {}
+
+parser = OptionParser.new do |o|
+  o.banner = "Usage: igniter-ledger-server [options]"
+  o.separator ""
+  o.separator "Network:"
+  o.on("--host HOST", "Bind host         (default: 127.0.0.1)") { |v| opts[:host] = v }
+  o.on("--port PORT", Integer, "Bind port         (default: 7400)") { |v| opts[:port] = v }
+  o.on("--transport TYPE", "tcp or unix       (default: tcp)") { |v| opts[:transport] = v.to_sym }
+
+  o.separator ""
+  o.separator "Storage:"
+  o.on("--backend BACKEND",              "memory or file    (default: memory)") { |v| opts[:backend] = v.to_sym }
+  o.on("--path PATH",                    "WAL file path     (required for --backend file)") { |v| opts[:path] = v }
+
+  o.separator ""
+  o.separator "Operations:"
+  o.on("--log-level LEVEL",             "debug|info|warn|error (default: info)")        { |v| opts[:log_level] = v.to_sym }
+  o.on("--pid-file PATH",               "Write PID to file on startup")                 { |v| opts[:pid_file] = v }
+  o.on("--drain-timeout SECS", Integer, "Graceful shutdown drain timeout (default: 5)") { |v| opts[:drain_timeout] = v }
+
+  o.separator ""
+  o.separator "Protocol API (envelope dispatch):"
+  o.on("--http-port PORT", Integer, "HTTP adapter port  (default: disabled)") { |v| opts[:http_port] = v }
+  o.on("--tcp-port PORT",  Integer, "TCP adapter port   (default: disabled)") { |v| opts[:tcp_port]  = v }
+
+  o.separator ""
+  o.separator "Changefeed:"
+  o.on("--changefeed-max-size N",               Integer, "Event ring size           (default: 1000)")   { |v| cf_opts[:max_size] = v }
+  o.on("--changefeed-subscriber-queue-size N",  Integer, "Per-subscriber queue size (default: 100)")    { |v| cf_opts[:subscriber_queue_size] = v }
+  o.on("--changefeed-overflow POLICY",                   "drop_oldest|drop_newest  (default: drop_oldest)") { |v| cf_opts[:overflow] = v.to_sym }
+  o.on("--changefeed-close-policy POLICY",               "drain|discard            (default: drain)") { |v| cf_opts[:close_policy] = v.to_sym }
+  o.on("--changefeed-diagnostic-ring-size N", Integer, "Diagnostic ring size      (default: 100)") { |v| cf_opts[:diagnostic_ring_size] = v }
+  o.on("--changefeed-alert-total-queued N", Integer, "Alert: total_queued >= N") { |v| cf_thresholds[:total_queued] = v }
+  o.on("--changefeed-alert-overflow-dropped-total N", Integer, "Alert: overflow_dropped_total >= N") { |v| cf_thresholds[:overflow_dropped_total] = v }
+  o.on("--changefeed-alert-failed-total N", Integer, "Alert: failed_total >= N") { |v| cf_thresholds[:failed_total] = v }
+  o.on("--changefeed-alert-queue-pressure-ratio FLOAT", Float, "Alert: queue_pressure_ratio >= FLOAT") { |v| cf_thresholds[:queue_pressure_ratio] = v }
+
+  o.separator ""
+  o.on("-h", "--help", "Show this help and exit") do
+    puts o
+    exit 0
+  end
+  o.on("-v", "--version", "Show version and exit") do
+    version = begin
+      require "igniter/version"
+      Igniter::VERSION
+    rescue LoadError
+      begin
+        require_relative "../../../lib/igniter/version"
+        Igniter::VERSION
+      rescue LoadError
+        Gem.loaded_specs["igniter-ledger"]&.version&.to_s || "unknown"
+      end
+    end
+    puts "igniter-ledger #{version}"
+    exit 0
+  end
+end
+
+begin
+  parser.parse!
+rescue OptionParser::InvalidOption, OptionParser::InvalidArgument => e
+  warn "Error: #{e.message}"
+  warn parser
+  exit 1
+end
+
+# Validate --backend file requires --path
+if opts[:backend] == :file && opts[:path].nil?
+  warn "Error: --backend file requires --path PATH"
+  exit 1
+end
+
+http_port = opts.delete(:http_port)
+tcp_port  = opts.delete(:tcp_port)
+
+cf_opts[:alert_thresholds] = cf_thresholds unless cf_thresholds.empty?
+opts[:changefeed] = cf_opts unless cf_opts.empty?
+
+config = Igniter::Ledger::ServerConfig.new(**opts)
+
+$stdout.sync = true
+$stderr.sync = true
+
+server = Igniter::Ledger::LedgerServer.new(config: config)
+if http_port || tcp_port
+  server.start_with_adapters(http_port: http_port, tcp_port: tcp_port)
+else
+  server.start_foreground
+end

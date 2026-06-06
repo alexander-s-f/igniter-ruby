@@ -1,0 +1,3 @@
+[workspace]
+members = ["ext/igniter_store_native"]
+resolver = "2"
