@@ -1,0 +1,12 @@
+/.bundle/
+/.yardoc
+/_yardoc/
+/coverage/
+/pkg/
+*.gem
+/spec/reports/
+/tmp/
+.idea
+**/config/credentials.local.yml
+.rubocop_cache/
+.claude/worktrees/
